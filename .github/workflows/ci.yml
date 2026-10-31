@@ -73,13 +73,13 @@ jobs:
           echo "SQL Server did not become available" >&2
           exit 1
       - name: Install EF Core CLI
-        run: dotnet tool install --global dotnet-ef --version 8.0.33
+        run: dotnet tool install --tool-path ./.tools dotnet-ef --version 8.0.33
       - name: Build API for E2E host
         run: dotnet build src/EnterpriseManagement.Api/EnterpriseManagement.Api.csproj --configuration Release
       - name: Apply migrations to SQL Server
         env:
           ConnectionStrings__DefaultConnection: "Server=127.0.0.1,1433;Database=EnterpriseManagementDb;User Id=sa;Password=Ci-Only_Strong-Passw0rd!;Encrypt=False;TrustServerCertificate=True"
-        run: dotnet ef database update --project src/EnterpriseManagement.Api --startup-project src/EnterpriseManagement.Api
+        run: ./.tools/dotnet-ef database update --project src/EnterpriseManagement.Api --startup-project src/EnterpriseManagement.Api
       - name: Start API
         env:
           ASPNETCORE_ENVIRONMENT: Development
