@@ -97,6 +97,16 @@ jobs:
           done
           cat /tmp/enterprise-api.log
           exit 1
+      - name: Provision isolated E2E administrator
+        run: |
+          curl --fail --silent --show-error -X POST http://127.0.0.1:5080/api/auth/register \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"admin-e2e@example.com","password":"E2e-Strong-Password-2026"}'
+          sql_container="$(docker ps -q | head -n 1)"
+          test -n "$sql_container"
+          docker exec "$sql_container" /opt/mssql-tools18/bin/sqlcmd \
+            -S localhost -U sa -P 'Ci-Only_Strong-Passw0rd!' -C \
+            -Q "UPDATE dbo.Users SET Role = N'Admin' WHERE Email = N'admin-e2e@example.com'; IF @@ROWCOUNT <> 1 THROW 50000, 'Expected one E2E admin account', 1;"
       - name: Install frontend dependencies and browsers
         working-directory: frontend
         run: |

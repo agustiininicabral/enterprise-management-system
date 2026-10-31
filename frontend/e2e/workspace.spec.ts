@@ -32,6 +32,18 @@ test('registration, login, role escalation protection, ownership and task CRUD',
   });
   expect(adminEndpointAsSelfAssignedUser.status()).toBe(403);
 
+  const adminLogin = await page.request.post('http://127.0.0.1:5080/api/auth/login', {
+    data: { email: 'admin-e2e@example.com', password }
+  });
+  expect(adminLogin.status()).toBe(200);
+  const adminAuth = await adminLogin.json();
+  const adminEndpointAsAdmin = await page.request.get('http://127.0.0.1:5080/api/admin/users', {
+    headers: { Authorization: `Bearer ${adminAuth.accessToken}` }
+  });
+  expect(adminEndpointAsAdmin.status()).toBe(200);
+  const adminUsers = await adminEndpointAsAdmin.json();
+  expect(adminUsers.some((user: { email: string }) => user.email === 'admin-e2e@example.com')).toBe(true);
+
   await page.locator('button[title="Sign out"]').click();
   await page.getByLabel('Email address').fill(secondEmail);
   await page.getByLabel('Password').fill(password);
