@@ -17,8 +17,22 @@ namespace EnterpriseManagement.Tests;
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
+    private readonly Dictionary<string, string?> _previousEnvironment = new();
 
-    public ApiFactory() => _connection.Open();
+    public ApiFactory()
+    {
+        SetTestEnvironment("Jwt__Issuer", "EnterpriseManagement.Tests");
+        SetTestEnvironment("Jwt__Audience", "EnterpriseManagement.Tests");
+        SetTestEnvironment("Jwt__Key", "integration-test-signing-key-with-at-least-32-bytes");
+        SetTestEnvironment("Jwt__ExpiresMinutes", "15");
+        _connection.Open();
+    }
+
+    private void SetTestEnvironment(string name, string value)
+    {
+        _previousEnvironment[name] = Environment.GetEnvironmentVariable(name);
+        Environment.SetEnvironmentVariable(name, value);
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -54,7 +68,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        if (disposing) _connection.Dispose();
+        if (disposing)
+        {
+            _connection.Dispose();
+            foreach (var (name, value) in _previousEnvironment)
+                Environment.SetEnvironmentVariable(name, value);
+        }
     }
 }
 
