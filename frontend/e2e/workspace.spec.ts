@@ -32,7 +32,7 @@ test('registration, login, role escalation protection, ownership and task CRUD',
   });
   expect(adminEndpointAsSelfAssignedUser.status()).toBe(403);
 
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.locator('button[title="Sign out"]').click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Email address').fill(secondEmail);
   await page.getByLabel('Password').fill(password);
@@ -52,7 +52,7 @@ test('registration, login, role escalation protection, ownership and task CRUD',
   });
   expect(crossUserTaskRead.status()).toBe(404);
 
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.locator('button[title="Sign out"]').click();
   await page.getByRole('button', { name: 'Already registered? Sign in' }).click();
   await page.getByLabel('Email address').fill(firstEmail);
   await page.getByLabel('Password').fill(password);
