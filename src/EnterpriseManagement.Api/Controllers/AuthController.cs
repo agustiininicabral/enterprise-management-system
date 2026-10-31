@@ -13,6 +13,8 @@ public sealed class AuthController(AppDbContext db, IPasswordHasher<User> hasher
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { error = "Email and password are required." });
         var email = request.Email.Trim().ToLowerInvariant();
         if (!IsValidEmail(email)) return BadRequest(new { error = "A valid email is required." });
         if (request.Password.Length < 10) return BadRequest(new { error = "Password must contain at least 10 characters." });
@@ -26,6 +28,8 @@ public sealed class AuthController(AppDbContext db, IPasswordHasher<User> hasher
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { error = "Email and password are required." });
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await db.Users.SingleOrDefaultAsync(x => x.Email == email, ct);
         if (user is null || hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
