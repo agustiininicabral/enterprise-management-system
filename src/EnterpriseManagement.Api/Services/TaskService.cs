@@ -5,8 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace EnterpriseManagement.Api.Services;
 public sealed class TaskService(AppDbContext db) : ITaskService
 {
-    public async Task<IReadOnlyList<TaskResponse>> GetAllAsync(Guid userId, CancellationToken ct) =>
-        await db.Tasks.AsNoTracking().Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAt).Select(x => Map(x)).ToListAsync(ct);
+    public async Task<IReadOnlyList<TaskResponse>> GetAllAsync(Guid userId, CancellationToken ct)
+    {
+        var items = await db.Tasks.AsNoTracking().Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt).ToListAsync(ct);
+        return items.Select(Map).ToList();
+    }
     public async Task<TaskResponse?> GetByIdAsync(Guid userId, Guid id, CancellationToken ct)
     {
         var item = await db.Tasks.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId && x.Id == id, ct);
