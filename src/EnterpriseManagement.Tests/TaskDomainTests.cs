@@ -2,7 +2,9 @@ using EnterpriseManagement.Api.Domain;
 using Xunit;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 namespace EnterpriseManagement.Tests;
+
 public sealed class TaskDomainTests
 {
     [Fact]
@@ -12,13 +14,14 @@ public sealed class TaskDomainTests
         Assert.NotEqual(Guid.Empty, task.Id);
         Assert.Equal(WorkTaskStatus.Todo, task.Status);
     }
+
     [Fact]
     public void TaskStatus_SerializesAsStringForFrontendContract()
     {
         var options = new JsonSerializerOptions();
         options.Converters.Add(new JsonStringEnumConverter());
-        Assert.Equal("\\"InProgress\\"", JsonSerializer.Serialize(WorkTaskStatus.InProgress, options));
-        Assert.Equal(WorkTaskStatus.Done, JsonSerializer.Deserialize<WorkTaskStatus>("\\"Done\\"", options));
+        Assert.Equal("\"InProgress\"", JsonSerializer.Serialize(WorkTaskStatus.InProgress, options));
+        Assert.Equal(WorkTaskStatus.Done, JsonSerializer.Deserialize<WorkTaskStatus>("\"Done\"", options));
     }
 
     [Theory]
