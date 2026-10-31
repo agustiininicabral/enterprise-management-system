@@ -33,7 +33,6 @@ test('registration, login, role escalation protection, ownership and task CRUD',
   expect(adminEndpointAsSelfAssignedUser.status()).toBe(403);
 
   await page.locator('button[title="Sign out"]').click();
-  await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Email address').fill(secondEmail);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Create account' }).click();
