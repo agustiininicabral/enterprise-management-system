@@ -1,10 +1,11 @@
 import {beforeEach,describe,expect,it,vi} from 'vitest';
-import {fireEvent,render,screen} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import App from './App';
 import {api} from './api';
 
 describe('App authentication and task flow',()=>{
  beforeEach(()=>{
+  cleanup();
   sessionStorage.clear();
   vi.restoreAllMocks();
  });
