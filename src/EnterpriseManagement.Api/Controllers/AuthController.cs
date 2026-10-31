@@ -40,9 +40,12 @@ public sealed class AuthController(
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException) when (await EmailAlreadyExistsAsync(email, ct))
+        catch (DbUpdateException)
         {
-            return Conflict(new { error = "An account with this email already exists." });
+            if (await EmailAlreadyExistsAsync(email, ct))
+                return Conflict(new { error = "An account with this email already exists." });
+
+            throw;
         }
 
         var (token, expires) = tokens.CreateToken(user);
