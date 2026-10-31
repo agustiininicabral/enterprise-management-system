@@ -142,7 +142,7 @@ public sealed class ApiIntegrationTests(ApiFactory factory) : IClassFixture<ApiF
         using var client = factory.CreateClient();
         HttpResponseMessage? lastResponse = null;
 
-        for (var attempt = 0; attempt < 11; attempt++)
+        for (var attempt = 0; attempt < 21; attempt++)
         {
             lastResponse = await client.PostAsJsonAsync("/api/auth/login", new
             {
