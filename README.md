@@ -50,11 +50,10 @@ Swagger is available at `http://localhost:5080/swagger` in Development. The Vite
 
 ## Database setup
 
-The EF Core model is included. Generate and apply the first migration from the repository root:
+The initial SQL Server migration is included. Apply it from the repository root:
 
 ```bash
 dotnet tool install --global dotnet-ef --version 8.*
-dotnet ef migrations add InitialCreate --project src/EnterpriseManagement.Api --startup-project src/EnterpriseManagement.Api
 dotnet ef database update --project src/EnterpriseManagement.Api --startup-project src/EnterpriseManagement.Api
 ```
 
