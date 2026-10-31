@@ -22,6 +22,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("Jwt:Issuer", "EnterpriseManagement.Tests");
+        builder.UseSetting("Jwt:Audience", "EnterpriseManagement.Tests");
+        builder.UseSetting("Jwt:Key", "integration-test-signing-key-with-at-least-32-bytes");
+        builder.UseSetting("Jwt:ExpiresMinutes", "15");
+        builder.UseSetting("Cors:Origins:0", "http://localhost:5173");
+
         builder.ConfigureAppConfiguration((_, configuration) =>
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
