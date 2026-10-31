@@ -21,6 +21,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
             b.Property<DateTime>("CreatedAt").HasColumnType("datetime2");
             b.Property<string>("Email").IsRequired().HasMaxLength(256).HasColumnType("nvarchar(256)");
             b.Property<string>("PasswordHash").IsRequired().HasColumnType("nvarchar(max)");
+            b.Property<string>("Role").IsRequired().ValueGeneratedOnAdd().HasMaxLength(32).HasDefaultValue("User").HasColumnType("nvarchar(32)");
             b.HasKey("Id");
             b.HasIndex("Email").IsUnique();
             b.ToTable("Users");

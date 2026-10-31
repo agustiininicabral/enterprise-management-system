@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using EnterpriseManagement.Api.Data;
+using EnterpriseManagement.Api.Domain;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -120,6 +121,45 @@ public sealed class ApiIntegrationTests(ApiFactory factory) : IClassFixture<ApiF
     }
 
     [Fact]
+    public async Task RegistrationCannotAssignAdminRole_AndAdminEndpointRequiresAdminClaim()
+    {
+        factory.InitializeDatabase();
+        using var client = factory.CreateClient();
+        var email = $"role-{Guid.NewGuid():N}@example.com";
+
+        var registration = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            email,
+            password = "Strong-password-123!",
+            role = User.AdminRole
+        });
+        Assert.Equal(HttpStatusCode.Created, registration.StatusCode);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", (await registration.Content.ReadFromJsonAsync<AuthPayload>())!.AccessToken);
+        var denied = await client.GetAsync("/api/admin/users");
+        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var user = await db.Users.SingleAsync(item => item.Email == email);
+            Assert.Equal(User.DefaultRole, user.Role);
+            user.Role = User.AdminRole;
+            await db.SaveChangesAsync();
+        }
+
+        var login = await client.PostAsJsonAsync("/api/auth/login", new { email, password = "Strong-password-123!" });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var auth = (await login.Content.ReadFromJsonAsync<AuthPayload>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+        var allowed = await client.GetAsync("/api/admin/users");
+        Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
+        var users = await allowed.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Contains(users.EnumerateArray(), item => item.GetProperty("email").GetString() == email);
+    }
+
+    [Fact]
     public async Task Registration_RejectsWeakPasswordsAndDuplicateEmails()
     {
         factory.InitializeDatabase();
@@ -154,6 +194,8 @@ public sealed class ApiIntegrationTests(ApiFactory factory) : IClassFixture<ApiF
         Assert.NotNull(lastResponse);
         Assert.Equal((HttpStatusCode)429, lastResponse.StatusCode);
     }
+
+    private sealed record AuthPayload(string AccessToken, DateTime ExpiresAt, string Email);
 
     private static async Task<(string Token, string Email)> Register(HttpClient client, string email)
     {

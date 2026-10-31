@@ -10,6 +10,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         modelBuilder.Entity<User>(e => {
             e.HasKey(x => x.Id); e.Property(x => x.Email).HasMaxLength(256).IsRequired();
             e.HasIndex(x => x.Email).IsUnique(); e.Property(x => x.PasswordHash).IsRequired();
+            e.Property(x => x.Role).HasMaxLength(32).HasDefaultValue(User.DefaultRole).IsRequired();
         });
         modelBuilder.Entity<WorkTask>(e => {
             e.HasKey(x => x.Id); e.Property(x => x.Title).HasMaxLength(120).IsRequired();
