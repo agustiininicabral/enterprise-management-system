@@ -136,6 +136,25 @@ public sealed class ApiIntegrationTests(ApiFactory factory) : IClassFixture<ApiF
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
     }
 
+    [Fact]
+    public async Task Login_IsRateLimitedAfterRepeatedFailedAttempts()
+    {
+        using var client = factory.CreateClient();
+        HttpResponseMessage? lastResponse = null;
+
+        for (var attempt = 0; attempt < 11; attempt++)
+        {
+            lastResponse = await client.PostAsJsonAsync("/api/auth/login", new
+            {
+                email = $"missing-{Guid.NewGuid():N}@example.com",
+                password = "Invalid-password-123!"
+            });
+        }
+
+        Assert.NotNull(lastResponse);
+        Assert.Equal((HttpStatusCode)429, lastResponse.StatusCode);
+    }
+
     private static async Task<(string Token, string Email)> Register(HttpClient client, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new { email, password = "Strong-password-123!" });
